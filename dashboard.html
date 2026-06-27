@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoCash - Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html,
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8edf5 100%);
+        }
+        
+        /* Header */
+        header {
+            width: 100%;
+            max-width: 480px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+            animation: slideDown 0.5s ease;
+        }
+        
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .logo-eco {
+            color: #0066ff;
+        }
+        
+        .logo-cash {
+            color: #ff0000;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .notification-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        
+        .notification-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e74c3c;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .logout-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        /* Main Content */
+        .main-content {
+            width: 100%;
+            max-width: 480px;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Welcome Card */
+        .welcome-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 25px 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .welcome-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0066ff, #0052cc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .welcome-info {
+            flex: 1;
+        }
+        
+        .welcome-greeting {
+            font-size: 14px;
+            color: #888;
+            font-weight: 500;
+        }
+        
+        .welcome-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-top: 2px;
+        }
+        
+        .welcome-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 13px;
+            color: #27ae60;
+            font-weight: 500;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse-dot 2s infinite;
+        }
+        
+        @keyframes pulse-dot {
+            0%,
+            100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, #0066ff, #0044b3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 15px;
+            color: white;
+            box-shadow: 0 8px 30px rgba(0, 102, 255, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+        
+        .balance-card::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -20%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
+        }
+        
+        .balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+        
+        .balance-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .balance-action-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .balance-action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 5px;
+        }
+        
+        .balance-currency {
+            font-size: 20px;
+            opacity: 0.7;
+            font-weight: 500;
+        }
+        
+        .balance-sub {
+            font-size: 14px;
+            opacity: 0.7;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .quick-action {
+            text-align: center;
+            padding: 16px 8px;
+            background: white;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: #333;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f0f0;
+        }
+        
+        .quick-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border-color: #0066ff;
+        }
+        
+        .quick-action .icon {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .quick-action .label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        /* Recent Transactions */
+        .transactions-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+            margin-bottom: 15px;
+        }
+        
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .transactions-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .view-all {
+            font-size: 13px;
+            color: #0066ff;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .view-all:hover {
+            text-decoration: underline;
+        }
+        
+        .transaction-list {
+            list-style: none;
+        }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .transaction-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .transaction-icon.credit {
+            background: #e8f5e9;
+            color: #27ae60;
+        }
+        
+        .transaction-icon.debit {
+            background: #fce4ec;
+            color: #e74c3c;
+        }
+        
+        .transaction-icon.loan {
+            background: #e3f2fd;
+            color: #0066ff;
+        }
+        
+        .transaction-icon.payment {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .transaction-details .name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .transaction-details .date {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+        
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 15px;
+            text-align: right;
+        }
+        
+        .transaction-amount.credit {
+            color: #27ae60;
+        }
+        
+        .transaction-amount.debit {
+            color: #e74c3c;
+        }
+        
+        .transaction-amount .sub {
+            font-size: 11px;
+            font-weight: 400;
+            color: #999;
+            display: block;
+        }
+        
+        /* Loan Status Card */
+        .loan-status-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+            margin-bottom: 15px;
+            border-left: 4px solid #0066ff;
+        }
+        
+        .loan-status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .loan-status-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .loan-status-badge {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .loan-status-badge.pending {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .loan-status-badge.approved {
+            background: #e8f5e9;
+            color: #27ae60;
+        }
+        
+        .loan-status-badge.rejected {
+            background: #fce4ec;
+            color: #e74c3c;
+        }
+        
+        .loan-status-badge.completed {
+            background: #e3f2fd;
+            color: #0066ff;
+        }
+        
+        .loan-status-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .loan-status-item {
+            flex: 1;
+            min-width: 80px;
+        }
+        
+        .loan-status-item .label {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .loan-status-item .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-top: 2px;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 20px;
+            color: #aaa;
+            font-size: 13px;
+            text-align: center;
+            width: 100%;
+            max-width: 480px;
+        }
+        
+        footer a {
+            color: #0066ff;
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .quick-actions {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+            }
+            
+            .quick-action {
+                padding: 12px 6px;
+            }
+            
+            .quick-action .icon {
+                font-size: 22px;
+            }
+            
+            .quick-action .label {
+                font-size: 10px;
+            }
+            
+            .balance-amount {
+                font-size: 28px;
+            }
+            
+            .welcome-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+            
+            .welcome-name {
+                font-size: 17px;
+            }
+            
+            .loan-status-details {
+                gap: 10px;
+            }
+            
+            .loan-status-item .value {
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 380px) {
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .balance-amount {
+                font-size: 24px;
+            }
+            
+            .transaction-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .transaction-amount {
+                text-align: left;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <span class="logo-eco">Eco</span><span class="logo-cash">Cash</span>
+        </div>
+        <div class="header-actions">
+            <button class="notification-btn" onclick="showNotification()">
+                🔔
+                <span class="notification-badge">3</span>
+            </button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <div class="welcome-avatar" id="userAvatar">JD</div>
+            <div class="welcome-info">
+                <div class="welcome-greeting">👋 Welcome back,</div>
+                <div class="welcome-name" id="userName">John Doe</div>
+                <div class="welcome-status">
+                    <span class="status-dot"></span>
+                    <span>Verified Account</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-header">
+                <span class="balance-label">💰 Available Balance</span>
+                <div class="balance-actions">
+                    <button class="balance-action-btn" onclick="toggleBalance()">👁️</button>
+                </div>
+            </div>
+            <div class="balance-amount" id="balanceDisplay">
+                <span class="balance-currency">$</span>12,450.00
+            </div>
+            <div class="balance-sub">📈 +5.2% from last month</div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="quick-action" onclick="alert('💰 Send Money feature coming soon!')">
+                <span class="icon">💸</span>
+                <span class="label">Send</span>
+            </div>
+            <div class="quick-action" onclick="alert('📥 Receive Money feature coming soon!')">
+                <span class="icon">📥</span>
+                <span class="label">Receive</span>
+            </div>
+            <div class="quick-action" onclick="window.location.href='application.html'">
+                <span class="icon">🏦</span>
+                <span class="label">Apply Loan</span>
+            </div>
+            <div class="quick-action" onclick="alert('📊 Transaction History coming soon!')">
+                <span class="icon">📊</span>
+                <span class="label">History</span>
+            </div>
+        </div>
+
+        <!-- Loan Status Card -->
+        <div class="loan-status-card" id="loanStatusCard">
+            <div class="loan-status-header">
+                <span class="loan-status-title">📋 Your Loan Status</span>
+                <span class="loan-status-badge pending" id="loanStatusBadge">Pending</span>
+            </div>
+            <div class="loan-status-details">
+                <div class="loan-status-item">
+                    <div class="label">Amount</div>
+                    <div class="value" id="loanStatusAmount">$5,000</div>
+                </div>
+                <div class="loan-status-item">
+                    <div class="label">Term</div>
+                    <div class="value" id="loanStatusTerm">12 months</div>
+                </div>
+                <div class="loan-status-item">
+                    <div class="label">Type</div>
+                    <div class="value" id="loanStatusType">Personal Loan</div>
+                </div>
+                <div class="loan-status-item">
+                    <div class="label">Reference</div>
+                    <div class="value" id="loanStatusRef">ECO-2026-XXXX</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="transactions-card">
+            <div class="transactions-header">
+                <span class="transactions-title">📊 Recent Transactions</span>
+                <a class="view-all" onclick="alert('View all transactions coming soon!')">View All →</a>
+            </div>
+            <ul class="transaction-list">
+                <li class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-icon credit">⬇️</div>
+                        <div class="transaction-details">
+                            <div class="name">Salary Deposit</div>
+                            <div class="date">Today, 10:30 AM</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount credit">
+                        +$3,500.00
+                        <span class="sub">Completed</span>
+                    </div>
+                </li>
+                <li class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-icon debit">⬆️</div>
+                        <div class="transaction-details">
+                            <div class="name">Food & Groceries</div>
+                            <div class="date">Yesterday, 3:15 PM</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount debit">
+                        -$125.50
+                        <span class="sub">Completed</span>
+                    </div>
+                </li>
+                <li class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-icon loan">🏦</div>
+                        <div class="transaction-details">
+                            <div class="name">Loan Disbursement</div>
+                            <div class="date">Jan 15, 2026</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount credit">
+                        +$5,000.00
+                        <span class="sub">Pending</span>
+                    </div>
+                </li>
+                <li class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-icon payment">📱</div>
+                        <div class="transaction-details">
+                            <div class="name">Mobile Recharge</div>
+                            <div class="date">Jan 14, 2026</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount debit">
+                        -$20.00
+                        <span class="sub">Completed</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        © 2026 EcoCash • <a href="#" onclick="alert('Privacy Policy')">Privacy</a> • 
+        <a href="#" onclick="alert('Terms of Service')">Terms</a> • 
+        <a href="#" onclick="alert('Help & Support')">Help</a>
+    </footer>
+
+    <script>
+        // ============================================
+        // GET USER DATA FROM LOCALSTORAGE
+        // ============================================
+        const fullName = localStorage.getItem('fullName') || 'John Doe';
+        const phone = localStorage.getItem('phone') || '771234567';
+        const loanAmount = localStorage.getItem('loanAmount') || '5000';
+        const loanTerm = localStorage.getItem('loanTerm') || '12';
+        const loanType = localStorage.getItem('loanType') || 'Personal Loan';
+
+        // Display user name
+        document.getElementById('userName').textContent = fullName;
+
+        // Set avatar initials
+        const initials = fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+
+        // Display loan status
+        document.getElementById('loanStatusAmount').textContent = '$' + parseFloat(loanAmount).toLocaleString();
+        document.getElementById('loanStatusTerm').textContent = loanTerm + ' months';
+        document.getElementById('loanStatusType').textContent = loanType;
+
+        // Generate reference number
+        const refNum = 'ECO-' + new Date().getFullYear() + '-' + 
+                      String(Math.floor(1000 + Math.random() * 9000));
+        document.getElementById('loanStatusRef').textContent = refNum;
+
+        // ============================================
+        // BALANCE TOGGLE
+        // ============================================
+        let balanceVisible = true;
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const actualBalance = '$12,450.00';
+
+        function toggleBalance() {
+            balanceVisible = !balanceVisible;
+            if (balanceVisible) {
+                balanceDisplay.innerHTML = `<span class="balance-currency">$</span>12,450.00`;
+            } else {
+                balanceDisplay.innerHTML = `<span style="font-size: 28px; letter-spacing: 4px;">••••••</span>`;
+            }
+        }
+
+        // ============================================
+        // NOTIFICATION
+        // ============================================
+        function showNotification() {
+            alert('📬 Notifications\n\n1. Your loan application is being reviewed\n2. New offer: 0% interest on first loan\n3. Your monthly statement is ready');
+        }
+
+        // ============================================
+        // LOGOUT FUNCTION
+        // ============================================
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear session data
+                localStorage.removeItem('verified');
+                localStorage.removeItem('otpVerified');
+                localStorage.removeItem('fullName');
+                localStorage.removeItem('email');
+                localStorage.removeItem('phone');
+                localStorage.removeItem('employment');
+                localStorage.removeItem('income');
+                localStorage.removeItem('loanAmount');
+                localStorage.removeItem('loanTerm');
+                localStorage.removeItem('loanType');
+                localStorage.removeItem('loanPurpose');
+
+                // Redirect to login
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            // Ctrl + L = Logout
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                logout();
+            }
+
+            // Escape = Go to home
+            if (e.key === 'Escape') {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // ============================================
+        // AUTO-REFRESH LOAN STATUS (Simulation)
+        // ============================================
+        let statusIndex = 0;
+        const statuses = [
+            { text: 'Pending', class: 'pending' },
+            { text: 'Approved', class: 'approved' },
+            { text: 'Disbursed', class: 'completed' }
+        ];
+
+        // Simulate status update after 5 seconds
+        setTimeout(() => {
+            const badge = document.getElementById('loanStatusBadge');
+            statusIndex = 1;
+            badge.textContent = statuses[statusIndex].text;
+            badge.className = 'loan-status-badge ' + statuses[statusIndex].class;
+
+            // Update transaction
+            const loanTransaction = document.querySelector('.transaction-item:nth-child(3) .transaction-amount');
+            if (loanTransaction) {
+                loanTransaction.innerHTML = '+$5,000.00<span class="sub">Completed</span>';
+                loanTransaction.className = 'transaction-amount credit';
+            }
+        }, 5000);
+
+        console.log('🏠 EcoCash Dashboard Loaded');
+        console.log('👤 User:', fullName);
+        console.log('📱 Phone:', phone);
+        console.log('💰 Loan Amount: $' + parseFloat(loanAmount).toLocaleString());
+        console.log('📋 Loan Status: Pending → Approved (simulated)');
+    </script>
+
+</body>
+
+</html>

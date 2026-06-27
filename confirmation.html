@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoCash - Application Submitted</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html,
+        body {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .success-icon {
+            font-size: 72px;
+            margin-bottom: 15px;
+            display: block;
+            animation: bounceIn 0.6s ease;
+        }
+        
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            font-size: 15px;
+            color: #777;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .info-box {
+            background: #f8f9ff;
+            border-radius: 16px;
+            padding: 18px 20px;
+            text-align: left;
+            margin-bottom: 25px;
+            border: 1px solid #eef0f5;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #888;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .loan-amount-highlight {
+            color: #0066ff;
+            font-size: 18px;
+        }
+        
+        .ref-number {
+            background: #f0f4ff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 15px 0 25px;
+            font-size: 13px;
+            color: #666;
+            border: 1px solid #e0e8f5;
+        }
+        
+        .ref-number strong {
+            color: #333;
+            font-size: 18px;
+            display: block;
+            margin-top: 4px;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0066ff, #0052cc);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 102, 255, 0.3);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #0066ff;
+            border: 2px solid #0066ff;
+        }
+        
+        .btn-outline:hover {
+            background: #0066ff;
+            color: white;
+            box-shadow: 0 8px 25px rgba(0, 102, 255, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+        }
+        
+        .redirect-timer {
+            background: #fff8e1;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin: 10px 0 20px;
+            font-size: 13px;
+            color: #666;
+            border: 1px solid #ffe0b2;
+        }
+        
+        .redirect-timer strong {
+            color: #e65100;
+            font-size: 18px;
+        }
+        
+        footer {
+            padding: 15px;
+            color: #aaa;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                padding: 25px 18px;
+            }
+            .title {
+                font-size: 22px;
+            }
+            .success-icon {
+                font-size: 56px;
+            }
+            .info-item {
+                flex-direction: column;
+                gap: 2px;
+            }
+            .btn {
+                font-size: 15px;
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="card">
+        <span class="success-icon">✅</span>
+        <h1 class="title">Application Submitted!</h1>
+        <p class="subtitle">
+            Your loan application has been received successfully.<br>
+            We'll review it and get back to you within 24 hours.
+        </p>
+
+        <div class="ref-number">
+            Reference Number
+            <strong id="refNumber">ECO-2026-XXXX</strong>
+        </div>
+
+        <div class="info-box">
+            <div class="info-item">
+                <span class="info-label">Loan Type</span>
+                <span class="info-value" id="confLoanType">Personal Loan</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Loan Amount</span>
+                <span class="info-value loan-amount-highlight" id="confLoanAmount">$5,000</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Term</span>
+                <span class="info-value" id="confLoanTerm">12 months</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Applicant</span>
+                <span class="info-value" id="confApplicant">John Doe</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Email</span>
+                <span class="info-value" id="confEmail">john@example.com</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Phone</span>
+                <span class="info-value" id="confPhone">+263 77 123 4567</span>
+            </div>
+        </div>
+
+        <div class="redirect-timer">
+            🔐 Redirecting to login in <strong id="timerDisplay">5</strong> seconds...
+        </div>
+
+        <div class="btn-group">
+            <a href="login.html" class="btn btn-success">🔐 GO TO LOGIN</a>
+            <a href="index.html" class="btn btn-outline">🏠 RETURN TO HOME</a>
+            <button class="btn btn-outline" onclick="window.print()" style="margin-top: 0;">📄 Print Application</button>
+        </div>
+    </main>
+
+    <footer>© 2026 EcoCash</footer>
+
+    <script>
+        // ============================================
+        // RETRIEVE ALL DATA FROM LOCALSTORAGE
+        // ============================================
+        const loanType = localStorage.getItem('loanType') || 'Personal Loan';
+        const loanAmount = localStorage.getItem('loanAmount') || '5000';
+        const loanTerm = localStorage.getItem('loanTerm') || '12';
+        const fullName = localStorage.getItem('fullName') || 'John Doe';
+        const email = localStorage.getItem('email') || 'john@example.com';
+        const phone = localStorage.getItem('phone') || '+263 77 123 4567';
+
+        // ============================================
+        // DISPLAY DATA ON CONFIRMATION PAGE
+        // ============================================
+        document.getElementById('confLoanType').textContent = loanType;
+        document.getElementById('confLoanAmount').textContent = '$' + parseFloat(loanAmount).toLocaleString();
+        document.getElementById('confLoanTerm').textContent = loanTerm + ' months';
+        document.getElementById('confApplicant').textContent = fullName;
+        document.getElementById('confEmail').textContent = email;
+        document.getElementById('confPhone').textContent = phone;
+
+        // ============================================
+        // GENERATE REFERENCE NUMBER
+        // ============================================
+        const refNum = 'ECO-' + new Date().getFullYear() + '-' + 
+                      String(Math.floor(1000 + Math.random() * 9000));
+        document.getElementById('refNumber').textContent = refNum;
+
+        // ============================================
+        // AUTO-REDIRECT TO LOGIN PAGE
+        // ============================================
+        let countdown = 5;
+        const timerDisplay = document.getElementById('timerDisplay');
+        
+        const redirectInterval = setInterval(() => {
+            countdown--;
+            timerDisplay.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(redirectInterval);
+                window.location.href = 'login.html';
+            }
+        }, 1000);
+
+        console.log('📋 EcoCash - Application Submitted');
+        console.log('📱 Reference Number:', refNum);
+        console.log('👤 Applicant:', fullName);
+        console.log('💰 Amount: $' + parseFloat(loanAmount).toLocaleString());
+        console.log('⏳ Redirecting to login in 5 seconds...');
+    </script>
+</body>
+
+</html>
